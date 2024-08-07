@@ -14,6 +14,7 @@ class DBClient {
     this.db = null;
     this.connect();
   }
+
   async connect() {
     try {
       await this.client.connect();
@@ -24,6 +25,7 @@ class DBClient {
       throw err;
     }
   }
+
   isAlive() {
     return this.db !== null;
   }
