@@ -3,7 +3,7 @@ import { promisify } from 'util';
 
 class RedisClient {
   constructor(host = 'localhost', port = 6379) {
-    this.client = redis.createClient({ host: host, port: port });
+    this.client = redis.createClient({ host, port });
     this.client.on('error', (err) => {
       console.log(err);
     });
@@ -23,6 +23,7 @@ class RedisClient {
     const asyncGet = promisify(this.client.get).bind(this.client);
     return asyncGet(key);
   }
+
   async set(key, value, duration) {
     const asyncSet = promisify(this.client.set).bind(this.client);
     return asyncSet(key, value, 'EX', duration);

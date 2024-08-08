@@ -1,6 +1,5 @@
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
-import express, { application } from 'express';
 
 class AppController {
   static async getStatus(req, res) {

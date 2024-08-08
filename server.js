@@ -1,6 +1,6 @@
 import express from 'express';
 import { env } from 'process';
-import routes from './routes/index.js';
+import routes from './routes/index';
 
 const app = express();
 
