@@ -66,6 +66,19 @@ class DBClient {
     return result.insertedId;
   }
 
+  async userExists(email) {
+    if (!this.isAlive()) {
+      throw new Error('There is no connection to the db');
+    }
+    try {
+      const result = await this.db.collection('users').findOne({ email });
+      return result !== null;
+    } catch (err) {
+      console.error('Error while checking if user exists:', err);
+      throw err;
+    }
+  }
+
   async addFile(file) {
     if (!this.isAlive()) {
       throw new Error('There is no connection to the db');
