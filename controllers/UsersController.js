@@ -24,7 +24,7 @@ class UsersController {
       .update(password)
       .digest('hex');
 
-    const newUser = { email, hashedPassword };
+    const newUser = { email: email, password: hashedPassword };
 
     const userId = await dbClient.addUser(newUser);
     res.status(201).json({ email: email, id: userId });
