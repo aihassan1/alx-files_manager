@@ -4,6 +4,9 @@ import { env } from 'process';
 const host = env.DB_HOST || 'localhost';
 const port = env.DB_PORT || 27017;
 const database = env.DB_DATABASE || 'files_manager';
+
+import { ObjectId } from 'mongodb';
+
 class DBClient {
   constructor() {
     const url = `mongodb://${host}:${port}/${database}`;
@@ -85,6 +88,17 @@ class DBClient {
     }
     const user = await this.db.collection('users').findOne({ email });
     return user;
+  }
+
+  async getUserById(id) {
+    try {
+      const objectId = new ObjectId(id);
+      const user = await this.db.collection('users').findOne({ _id: objectId });
+      return user;
+    } catch (err) {
+      console.error('Error fetching user by ID:', err);
+      throw err;
+    }
   }
 
   async addFile(file) {

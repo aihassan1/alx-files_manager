@@ -2,7 +2,6 @@ import dbClient from '../utils/db';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import redisClient from '../utils/redis';
-import exp from 'constants';
 
 class AuthController {
   static async getConnect(req, res) {
@@ -43,6 +42,25 @@ class AuthController {
     } catch (err) {
       if (err.message === 'User does not exist')
         return res.status(401).json({ error: 'Unauthorized' });
+    }
+  }
+
+  static async getDisconnect(req, res) {
+    const token = req.header('X-Token');
+
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const key = `auth_${token}`;
+
+    const user = await redisClient.get(key);
+
+    if (user) {
+      await redisClient.del(key);
+      return res.status(204).end();
+    } else {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
   }
 }
