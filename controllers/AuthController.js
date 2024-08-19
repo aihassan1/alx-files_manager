@@ -1,6 +1,6 @@
-import dbClient from '../utils/db';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
+import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
 class AuthController {
@@ -38,7 +38,7 @@ class AuthController {
       // store the token in redis for 24 hrs
       await redisClient.set(key, user._id.toString(), 24 * 3600);
 
-      res.status(200).json({ token: token });
+      res.status(200).json({ token });
     } catch (err) {
       if (err.message === 'User does not exist')
         return res.status(401).json({ error: 'Unauthorized' });
@@ -59,9 +59,8 @@ class AuthController {
     if (user) {
       await redisClient.del(key);
       return res.status(204).end();
-    } else {
-      return res.status(401).json({ error: 'Unauthorized' });
     }
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 }
 

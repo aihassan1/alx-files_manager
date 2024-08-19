@@ -1,5 +1,5 @@
-import dbClient from '../utils/db';
 import crypto from 'crypto';
+import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
 class UsersController {
@@ -25,10 +25,10 @@ class UsersController {
       .update(password)
       .digest('hex');
 
-    const newUser = { email: email, password: hashedPassword };
+    const newUser = { email, password: hashedPassword };
 
     const userId = await dbClient.addUser(newUser);
-    res.status(201).json({ email: email, id: userId });
+    res.status(201).json({ email, id: userId });
   }
 
   static async getMe(req, res) {
@@ -42,9 +42,8 @@ class UsersController {
     const user = await dbClient.getUserById(userId);
     if (user) {
       return res.json({ email: user.email, id: user._id });
-    } else {
-      return res.status(401).json({ error: 'Unauthorized' });
     }
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 }
 

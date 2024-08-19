@@ -1,11 +1,9 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import { env } from 'process';
 
 const host = env.DB_HOST || 'localhost';
 const port = env.DB_PORT || 27017;
 const database = env.DB_DATABASE || 'files_manager';
-
-import { ObjectId } from 'mongodb';
 
 class DBClient {
   constructor() {
@@ -107,6 +105,17 @@ class DBClient {
     }
     const result = await this.db.collection('files').insertOne(file);
     return result.insertedId;
+  }
+
+  async getFile(fileId) {
+    if (!this.isAlive) {
+      throw new Error('There is no connection to the db');
+    }
+    const fileObjectID = new ObjectId(fileId);
+    const file = await this.db
+      .collection('files')
+      .findOne({ _id: fileObjectID });
+    return file;
   }
 }
 
