@@ -115,7 +115,19 @@ class DBClient {
     const file = await this.db
       .collection('files')
       .findOne({ _id: fileObjectID });
+
     return file;
+  }
+
+  async getAllFiles(parentId) {
+    if (!this.isAlive) {
+      throw new Error('There is no connection to the db');
+    }
+    const files = this.db
+      .collection('files')
+      .find({ parentId: parentId })
+      .toArray();
+    return files;
   }
 }
 

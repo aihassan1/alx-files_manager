@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
 import { promisify } from 'util';
+import UsersController from './UsersController';
+import { isErrored } from 'stream';
 
 const mkdir = promisify(fs.mkdir);
 const writeFile = promisify(fs.writeFile);
@@ -11,22 +13,8 @@ const writeFile = promisify(fs.writeFile);
 class FilesController {
   static async postUpload(req, res) {
     try {
-      // check if the user is authorized
-      const token = req.header('X-Token');
-      if (!token) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
+      const user = await UsersController.getAuthedUser(req, res);
 
-      const key = `auth_${token}`;
-      const userId = await redisClient.get(key);
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      const user = await dbClient.getUserById(userId);
-      if (!user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
       // check if input data is valid
 
       const { name, type, parentId, isPublic, data } = req.body;
@@ -46,6 +34,7 @@ class FilesController {
 
       if (parentId) {
         const parent = await dbClient.getFile(parentId);
+        console.log(parentId);
         if (!parent) {
           return res.status(400).json({ error: 'Parent not found' });
         }
@@ -68,7 +57,7 @@ class FilesController {
       }
 
       const newFile = {
-        userId: userId,
+        userId: user._id,
         name: name,
         type: type,
         isPublic: isPublic || false,
@@ -79,7 +68,7 @@ class FilesController {
       const result = await dbClient.addFile(newFile);
       const response = {
         id: result,
-        userId: userId,
+        userId: user._id,
         name: name,
         type: type,
         isPublic: isPublic || false,
@@ -88,7 +77,37 @@ class FilesController {
 
       return res.status(201).json(response);
     } catch (err) {
+      console.log(err);
       return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
+  static async getShow(req, res) {
+    const user = await UsersController.getAuthedUser(req, res);
+
+    const fileId = req.params.id;
+    const file = await dbClient.getFile(fileId);
+    if (!file || file.userId !== user._id) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    return res.status(200).json(file);
+  }
+
+  static async getIndex(req, res) {
+    try {
+      const user = await UsersController.getAuthedUser(req, res);
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const parentId = req.query.parentId || 0;
+
+      const listOfFiles = (await dbClient.getAllFiles(parentId)) || [];
+
+      return res.status(200).json(listOfFiles);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ error: 'internal server error' });
     }
   }
 }
